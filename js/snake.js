@@ -114,7 +114,7 @@ SNAKE.Snake = SNAKE.Snake || (function() {
         var me = this,
             playingBoard = config.playingBoard,
             myId = instanceNumber++,
-            growthIncr = 5,
+            growthIncr = 3, // ToDo: Anpassen?
             moveQueue = [], // a queue that holds the next moves of the snake
             currentDirection = 1, // 0: up, 1: left, 2: down, 3: right
             columnShift = [0, 1, 0, -1],
@@ -124,12 +124,7 @@ SNAKE.Snake = SNAKE.Snake || (function() {
             snakeSpeed = 75,
             isDead = false,
             isPaused = false;
-        function getMode (mode, speed) {
-    document.getElementById(mode).addEventListener('click', function () { snakeSpeed = speed; });
-}
-            getMode('Easy', 100);
-            getMode('Medium', 75);
-            getMode('Difficult', 50);
+
         // ----- public variables -----
         me.snakeBody = {};
         me.snakeBody["b0"] = new SnakeBlock(); // create snake head
@@ -146,6 +141,10 @@ SNAKE.Snake = SNAKE.Snake || (function() {
         me.snakeBody["b0"].prev = me.snakeBody["b0"];
         
         me.snakeLength = 1;
+        me.Score = 10;
+        me.amountOfFoodEaten = 0;
+        me.wasStartedOnce = false;
+
         me.snakeHead = me.snakeBody["b0"];
         me.snakeTail = me.snakeBody["b0"];
         me.snakeHead.elm.className = me.snakeHead.elm.className.replace(/\bsnake-snakebody-dead\b/,'');
@@ -182,14 +181,13 @@ SNAKE.Snake = SNAKE.Snake || (function() {
         }
         
         // ----- public methods -----
-        
         me.setPaused = function(val) {
             isPaused = val;
         };
         me.getPaused = function() {
             return isPaused;
         };
-        
+
         /**
         * This method is called when a user presses a key. It logs arrow key presses in "moveQueue", which is used when the snake needs to make its next move.
         * @method handleArrowKeys
@@ -208,31 +206,37 @@ SNAKE.Snake = SNAKE.Snake || (function() {
             var snakeLength = me.snakeLength;
             var lastMove = moveQueue[0] || currentDirection;
 
-            //console.log("lastmove="+lastMove);
-            //console.log("dir="+keyNum);
-            
             switch (keyNum) {
+                
+                case 2: // Swipe nach links
                 case 37:
                 case 65:
                     if ( lastMove !== 1 || snakeLength === 1 ) {
+                        //alert("nach links");
                         moveQueue.unshift(3); //SnakeDirection = 3;
                     }
                     break;    
+                case 8: // Swipe nach rechts
                 case 38:
                 case 87:
                     if ( lastMove !== 2 || snakeLength === 1 ) {
+                        //alert("nach rechts");
                         moveQueue.unshift(0);//SnakeDirection = 0;
                     }
-                    break;    
+                    break;
+                case 4: // Swipe nach oben
                 case 39:
                 case 68:
                     if ( lastMove !== 3 || snakeLength === 1 ) {
+                        //alert("nach oben");
                         moveQueue.unshift(1); //SnakeDirection = 1;
                     }
                     break;    
+                case 16: // Swipe nach unten
                 case 40:
                 case 83:
                     if ( lastMove !== 0 || snakeLength === 1 ) {
+                        //alert("nach unten");
                         moveQueue.unshift(2);//SnakeDirection = 2;
                     }
                     break;  
@@ -249,12 +253,12 @@ SNAKE.Snake = SNAKE.Snake || (function() {
                 newHead = me.snakeTail,
                 myDirection = currentDirection,
                 grid = playingBoard.grid; // cache grid for quicker lookup
-        
+
             if (isPaused === true) {
-                setTimeout(function(){me.go();}, snakeSpeed);
+                setTimeout(function(){me.go();}, me.snakeSpeed);
                 return;
             }
-        
+
             me.snakeTail = newHead.prev;
             me.snakeHead = newHead;
         
@@ -262,7 +266,7 @@ SNAKE.Snake = SNAKE.Snake || (function() {
             if ( grid[newHead.row] && grid[newHead.row][newHead.col] ) {
                 grid[newHead.row][newHead.col] = 0;
             }
-        
+
             if (moveQueue.length){
                 myDirection = currentDirection = moveQueue.pop();
             }
@@ -283,13 +287,13 @@ SNAKE.Snake = SNAKE.Snake || (function() {
 
             if (grid[newHead.row][newHead.col] === 0) {
                 grid[newHead.row][newHead.col] = 1;
-                setTimeout(function(){me.go();}, snakeSpeed);
+                setTimeout(function(){me.go();}, me.snakeSpeed);
             } else if (grid[newHead.row][newHead.col] > 0) {
                 me.handleDeath();
             } else if (grid[newHead.row][newHead.col] === playingBoard.getGridFoodValue()) {
                 grid[newHead.row][newHead.col] = 1;
                 me.eatFood();
-                setTimeout(function(){me.go();}, snakeSpeed);
+                setTimeout(function(){me.go();}, me.snakeSpeed);
             }
         };
         
@@ -302,6 +306,9 @@ SNAKE.Snake = SNAKE.Snake || (function() {
                 createBlocks(growthIncr*2);
             }
             var blocks = blockPool.splice(0, growthIncr);
+            me.Score = me.Score + 10 + me.amountOfFoodEaten;
+            me.amountOfFoodEaten = me.amountOfFoodEaten + 1; //ToDo: Iterationsschritte erhöhen, ggf. in Abhängigkeit von Schlangenlänge
+            document.getElementById("snake-food-0").innerHTML = 10 + me.amountOfFoodEaten;
             
             var ii = blocks.length,
                 index,
@@ -327,15 +334,6 @@ SNAKE.Snake = SNAKE.Snake || (function() {
         * @method handleDeath
         */
         me.handleDeath = function() {
-            function recordScore () {
-                var highScore = localStorage.jsSnakeHighScore;
-                if (highScore == undefined) localStorage.setItem('jsSnakeHighScore', me.snakeLength);
-                if (me.snakeLength > highScore) {
-                    alert('Congratulations! You have beaten your previous high score, which was ' + highScore + '.');
-                        localStorage.setItem('jsSnakeHighScore', me.snakeLength);
-                }
-}
-            recordScore();
             me.snakeHead.elm.style.zIndex = getNextHighestZIndex(me.snakeBody);
             me.snakeHead.elm.className = me.snakeHead.elm.className.replace(/\bsnake-snakebody-alive\b/,'')
             me.snakeHead.elm.className += " snake-snakebody-dead";
@@ -374,6 +372,10 @@ SNAKE.Snake = SNAKE.Snake || (function() {
             me.snakeHead.prev = me.snakeHead;
             me.snakeTail = me.snakeHead;
             me.snakeLength = 1;
+            me.amountOfFoodEaten = 0;
+            // Score nicht resetten!
+            me.wasStartedOnce = true;
+            document.getElementById("snake-food-0").innerHTML = 10 + me.amountOfFoodEaten;
             
             for (var ii = 0; ii < blocks.length; ii++) {
                 blocks[ii].elm.style.left = "-1000px";
@@ -483,8 +485,9 @@ SNAKE.Food = SNAKE.Food || (function() {
             var maxCols = playingBoard.grid[0].length-1;
             
             while (playingBoard.grid[row][col] !== 0){
-                row = getRandomPosition(1, maxRows);
-                col = getRandomPosition(1, maxCols);
+                // Darf nicht am Rand spawnen
+                row = getRandomPosition(2, maxRows-2);
+                col = getRandomPosition(2, maxCols-2);
 
                 // in some cases there may not be any room to put food anywhere
                 // instead of freezing, exit out
@@ -607,17 +610,18 @@ SNAKE.Board = SNAKE.Board || (function() {
                 elmContainer.focus();
             }, false);
             
+            // ToDo: Art von Gutschein ändern
             elmPauseScreen = document.createElement("div");
             elmPauseScreen.className = "snake-pause-screen";
-            elmPauseScreen.innerHTML = "<div style='padding:10px;'>[Paused]<p/>Press [space] to unpause.</div>";
+            //elmPauseScreen.innerHTML = "<p></p>Die Übungsphase ist vorbei.<br> Du wirst jetzt zu unserem Fragebogen weiter geleitet, danach hast Du Die Chance einen Gutschein zu gewinnen!<p></p>";
             
             elmAboutPanel = document.createElement("div");
             elmAboutPanel.className = "snake-panel-component";
-            elmAboutPanel.innerHTML = "<a href='http://patorjk.com/blog/software/' class='snake-link'>more patorjk.com apps</a> - <a href='https://github.com/patorjk/JavaScript-Snake' class='snake-link'>source code</a>";
+            elmAboutPanel.innerHTML = "<div>Zeit: <span id='time'>02:00</span> Minuten &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>";
             
             elmLengthPanel = document.createElement("div");
             elmLengthPanel.className = "snake-panel-component";
-            elmLengthPanel.innerHTML = "Length: 1";
+            elmLengthPanel.innerHTML = "Score: 10";
             
             elmWelcome = createWelcomeElement();
             elmTryAgain = createTryAgainElement();
@@ -662,9 +666,9 @@ SNAKE.Board = SNAKE.Board || (function() {
             if (config.fullScreen) {
                 fullScreenText = "On Windows, press F11 to play in Full Screen mode.";   
             }
-            welcomeTxt.innerHTML = "JavaScript Snake<p></p>Use the <strong>arrow keys</strong> on your keyboard to play the game. " + fullScreenText + "<p></p>";
+            welcomeTxt.innerHTML = "<h1>Snake</h1><p></p>Benutze die <strong>Pfeiltasten</strong> oder <strong>Wischbewegungen</strong> zum Spielen.<br><br>Das Spiel beginnt, sobald Du deine erste Bewegung machst. " + fullScreenText + "<p></p>";
             var welcomeStart = document.createElement("button");
-            welcomeStart.appendChild(document.createTextNode("Play Game"));
+            welcomeStart.appendChild(document.createTextNode("Spielen!"));
             var loadGame = function() {
                 SNAKE.removeEventListener(window, "keyup", kbShortcut, false);
                 tmpElm.style.display = "none";
@@ -693,15 +697,12 @@ SNAKE.Board = SNAKE.Board || (function() {
             tmpElm.className = "snake-try-again-dialog";
             
             var tryAgainTxt = document.createElement("div");
-            tryAgainTxt.innerHTML = "JavaScript Snake<p></p>You died :(.<p></p>";
+            tryAgainTxt.innerHTML = "<h1>Snake</h1><p></p>Die Übungsphase ist vorbei.<br> Du wirst jetzt zu unserem Fragebogen weiter geleitet, danach hast Du Die Chance einen Gutschein zu gewinnen!<p></p>";
             var tryAgainStart = document.createElement("button");
-            tryAgainStart.appendChild( document.createTextNode("Play Again?"));
+            tryAgainStart.appendChild( document.createTextNode("Weiter zum Fragebogen"));
             
-            var reloadGame = function() {
-                tmpElm.style.display = "none";
-                me.resetBoard();
-                me.setBoardState(1);
-                me.getBoardContainer().focus();
+            var weiterLeiten = function() {
+                window.location = "http://www.google.com/"
             };
             
             var kbTryAgainShortcut = function(evt) {
@@ -712,9 +713,10 @@ SNAKE.Board = SNAKE.Board || (function() {
                     reloadGame();
                 }
             };
+
             SNAKE.addEventListener(window, "keyup", kbTryAgainShortcut, true);
             
-            SNAKE.addEventListener(tryAgainStart, "click", reloadGame, false);
+            SNAKE.addEventListener(tryAgainStart, "click", weiterLeiten, false);
             tmpElm.appendChild(tryAgainTxt);
             tmpElm.appendChild(tryAgainStart);
             return tmpElm;
@@ -727,14 +729,18 @@ SNAKE.Board = SNAKE.Board || (function() {
             isPaused = val;
             mySnake.setPaused(val);
             if (isPaused) {
-                elmPauseScreen.style.display = "block";
+                //elmPauseScreen.style.display = "block";
             } else {
-                elmPauseScreen.style.display = "none";
+                //elmPauseScreen.style.display = "none";
             }
         };
         me.getPaused = function() {
             return isPaused;
         };
+
+        me.setSnakeSpeed = function(val) {
+            snakeSpeed = val;
+        }
         
         /**
         * Resets the playing board for a new game.
@@ -743,7 +749,7 @@ SNAKE.Board = SNAKE.Board || (function() {
         me.resetBoard = function() {
             SNAKE.removeEventListener(elmContainer, "keydown", myKeyListener, false);
             mySnake.reset();
-            elmLengthPanel.innerHTML = "Length: 1";
+            //elmLengthPanel.innerHTML = "Length: 1";
             me.setupPlayingField();
         };
         /**
@@ -826,7 +832,7 @@ SNAKE.Board = SNAKE.Board || (function() {
                 cLeft = 0;
                 cWidth = getClientWidth()-5;
                 cHeight = getClientHeight()-5;
-                document.body.style.backgroundColor = "#FC5454";
+                document.body.style.backgroundColor = "#ffffff";
             } else {
                 cTop = config.top;
                 cLeft = config.left;
@@ -861,13 +867,6 @@ SNAKE.Board = SNAKE.Board || (function() {
             elmLengthPanel.style.top = pLabelTop;
             elmLengthPanel.style.left = cWidth - 120 + "px";
             
-            // if width is too narrow, hide the about panel
-            if (cWidth < 700) {
-                elmAboutPanel.style.display = "none";
-            } else {
-                elmAboutPanel.style.display = "block";
-            }
-            
             me.grid = [];
             var numBoardCols = fWidth / me.getBlockWidth() + 2;
             var numBoardRows = fHeight / me.getBlockHeight() + 2;
@@ -884,14 +883,11 @@ SNAKE.Board = SNAKE.Board || (function() {
             }
             
             myFood.randomlyPlaceFood();
-            
+            document.getElementById("snake-food-0").innerHTML = 10;
+
+            var timetoplay = 120; // In Sekunden
+
             // setup event listeners
-            function getMode (mode, speed) {
-    document.getElementById(mode).addEventListener('click', function () { snakeSpeed = speed; });
-}
-            getMode('Easy', 100);
-            getMode('Medium', 75);
-            getMode('Difficult', 50);
             myKeyListener = function(evt) {
                 if (!evt) var evt = window.event;
                 var keyNum = (evt.which) ? evt.which : evt.keyCode;
@@ -901,16 +897,10 @@ SNAKE.Board = SNAKE.Board || (function() {
                     
                     // This removes the listener added at the #listenerX line
                     SNAKE.removeEventListener(elmContainer, "keydown", myKeyListener, false);
-                    
+
                     myKeyListener = function(evt) {
                         if (!evt) var evt = window.event;
                         var keyNum = (evt.which) ? evt.which : evt.keyCode;
-                        
-                        //console.log(keyNum);
-                        if (keyNum === 32) {
-							if(me.getBoardState()!=0)
-                                me.setPaused(!me.getPaused());
-                        }
                         
                         mySnake.handleArrowKeys(keyNum);
                         
@@ -919,11 +909,23 @@ SNAKE.Board = SNAKE.Board || (function() {
                         if (evt.preventDefault) {evt.preventDefault();}
                         return false;
                     };
-                    SNAKE.addEventListener( elmContainer, "keydown", myKeyListener, false);
+                    SNAKE.addEventListener( elmContainer, "keydown", myKeyListener, false); // Fuer Pause mit Leertaste
                     
                     mySnake.rebirth();
                     mySnake.handleArrowKeys(keyNum);
+
                     me.setBoardState(2); // start the game!
+
+                    // Den Timer auf 2 Minuten setzen und runter zaehlen lassen
+                    if (mySnake.wasStartedOnce === false) {
+                        wasStartedOnce = true;
+                        //var twoMinutes = 30;
+                        var display = document.querySelector('#time');
+                        startTimer(timetoplay, display);
+                        // Updated alle 75ms für Tastatureingaben (PC)
+                        mySnake.snakeSpeed = 75;
+                    }
+
                     mySnake.go();
                 }
                 
@@ -932,17 +934,70 @@ SNAKE.Board = SNAKE.Board || (function() {
                 if (evt.preventDefault) {evt.preventDefault();}
                 return false;
             };
-            
+
+            function addSwipeListener() {
+                var body = document.getElementsByTagName("BODY")[0];
+                var hammer = new Hammer(document.getElementsByTagName("BODY")[0]);
+                hammer.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
+                hammer.on('swipe', function(event, arg1, arg2) {
+                    event.preventDefault();
+                    mySnake.rebirth();
+                    if (!(event.direction === 2 || event.direction === 4 || event.direction === 8 || event.direction === 16)) {return;} // if not a swipe, leave
+                    mySnake.handleArrowKeys(event.direction);
+                    if (me.getBoardState() === 1) {
+                        // Den Timer auf 2 Minuten setzen und runter zaehlen lassen
+                        if (mySnake.wasStartedOnce === false) {
+                            // Updated alle 120ms für Swipe-Eingaben (Mobil)
+                            mySnake.snakeSpeed = 120;
+
+                            wasStartedOnce = true;
+                            //var twoMinutes = 30;
+                            var display = document.querySelector('#time');
+                            startTimer(timetoplay, display);
+                        }
+                        me.setBoardState(2); // start the game!
+                        mySnake.go();
+                    }
+                });
+            };
+
             // Search for #listenerX to see where this is removed
             SNAKE.addEventListener( elmContainer, "keydown", myKeyListener, false);
+            // Swipe Geste hinzufuegen
+            addSwipeListener();
+
         };
         
+        function startTimer(duration, display) {
+            var timer = duration, minutes, seconds;
+            var intervalId = setInterval(function () {
+                minutes = parseInt(timer / 60, 10)
+                seconds = parseInt(timer % 60, 10);
+        
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+        
+                display.textContent = minutes + ":" + seconds;
+        
+                if (--timer < 0) {
+                    // Spiel ist zu Ende, pausiere und zeige letztes Popup an.
+                    me.setPaused(true);
+                    elmContainer.removeChild(elmTryAgain);
+                    elmContainer.appendChild(elmTryAgain);
+                    var index = Math.max(getNextHighestZIndex( mySnake.snakeBody), getNextHighestZIndex( {tmp:{elm:myFood.getFoodElement()}} ));
+                    elmTryAgain.style.zIndex = index;
+                    elmTryAgain.style.display = "block";
+                    clearInterval(intervalId); // Den Countdown pausieren
+                }
+            }, 1000);
+        }
+
         /**
         * This method is called when the snake has eaten some food.
         * @method foodEaten
         */ 
         me.foodEaten = function() {
-            elmLengthPanel.innerHTML = "Length: " + mySnake.snakeLength;
+            elmLengthPanel.innerHTML = "Score: " + mySnake.Score;
             myFood.randomlyPlaceFood();
         };
         
@@ -951,12 +1006,9 @@ SNAKE.Board = SNAKE.Board || (function() {
         * @method handleDeath
         */ 
         me.handleDeath = function() {
-            var index = Math.max(getNextHighestZIndex( mySnake.snakeBody), getNextHighestZIndex( {tmp:{elm:myFood.getFoodElement()}} ));
-            elmContainer.removeChild(elmTryAgain);
-            elmContainer.appendChild(elmTryAgain);
-            elmTryAgain.style.zIndex = index;
-            elmTryAgain.style.display = "block";
-            me.setBoardState(0);
+            me.resetBoard();
+            me.setBoardState(1);
+            me.getBoardContainer().focus();
         };
         
         // ---------------------------------------------------------------------
@@ -983,10 +1035,3 @@ SNAKE.Board = SNAKE.Board || (function() {
         
     }; // end return function
 })();
-function getHighScore () {
-    document.getElementById('high-score').addEventListener('click', function () {
-        if (localStorage.jsSnakeHighScore == undefined) alert('You have not played this game yet!');
-        else
-    alert('Your current high score is ' + localStorage.jsSnakeHighScore + '.'); });
-}
-getHighScore();

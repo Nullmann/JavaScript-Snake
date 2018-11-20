@@ -10,51 +10,29 @@ http://patorjk.com/games/snake
 Source code is available here: https://github.com/patorjk/JavaScript-Snake
 
 --> 
-    <meta charset="utf-8">
-    <title>JavaScript Snake</title>
-    <link rel=stylesheet id=style type=text/css href=./css/main-snake.css />
-    <button onclick=getTheme()>Click to use this theme.</button>
-    <select id="select">
-        <option>Dark Theme</option>
-        <option>Revert To Original</option>
-    </select>
-    <div id="mode-wrapper">Select which mode you would like to play in.<br /><button id="Easy">Easy</button><br /><button id="Medium">Medium</button><br /><button id="Difficult">Difficult</button></div>
-<button id="high-score">Get your current high score for this game.</button>
-<script>
-function getTheme () {
-    function changeTheme (Theme) {
-        document.getElementById('style').setAttribute('href', Theme);
-    }
-    var index = document.getElementById("select").selectedIndex;
-    switch (index) {
-        case 0: 
-          changeTheme('css/dark-snake.css');
-          break;
-          case 1: changeTheme('css/main-snake.css');
-    }
-}
-if (navigator.onLine && window.location.hostname === 'patorjk.com') {
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-3312460-1']);
-    _gaq.push(['_trackPageview']);
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
 
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-}
-</script>
+    <meta charset="utf-8">
+    <title>Snake</title>
+    <link rel=stylesheet id=style type=text/css href=./css/main-snake.css />
+
+<!-- Hammerjs fuer Swipe-Support auf mobilen Endgeräten -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
 </head>
 <body>
-    <div id="game-area" tabindex="0">
+    <div id="whole_screen">
+        <div id="game-area" tabindex="0">
+        </div>
+        <script type="text/javascript" src="./js/snake.js"></script>
+        <script type="text/javascript">
+        var mySnakeBoard = new SNAKE.Board(  {
+                boardContainer: "game-area",
+                fullScreen: false,
+                width: 355,
+                height: 507
+            });    
+        </script>
+        <!-- <div id ="textlog">Test:<br></div> -->
     </div>
-    <script type="text/javascript" src="./js/snake.js"></script>
-    <script type="text/javascript">
-    var mySnakeBoard = new SNAKE.Board(  {
-                                            boardContainer: "game-area",
-                                            fullScreen: true
-                                        });    
-    </script>
 </body>
 </html>

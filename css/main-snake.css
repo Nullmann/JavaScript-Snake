@@ -56,9 +56,9 @@ a.snake-link:hover {
     position: absolute;
     font-family: Verdana, arial, helvetica, sans-serif; 
     font-size: 14px;
-    color: #ffffff;
+    color: black;
     text-align: center;
-    background-color: #FC5454;
+    background-color: #ffffff;
     padding: 8px;
     margin: 0px;
 }
@@ -66,23 +66,23 @@ a.snake-link:hover {
 .snake-snakebody-block {
     margin: 0px;
     padding: 0px;
-    background-color: #FF0000;
+    background-color: #000000;
     position: absolute;
     border: 0px solid #000080;
     background-repeat: no-repeat;
 }
 
 .snake-snakebody-alive {
-   background-image: url('./images/snakeblock.png');
+    background-image: url('./images/snakeblock.png');
 }
 .snake-snakebody-dead {
-   background-image: url('./images/deadblock.png');
+    background-image: url('./images/deadblock.png');
 }
 
 .snake-food-block {
     margin: 0px;
     padding: 0px;
-    background-color: #FF0000;
+    background-color: rgb(255, 0, 0);
     border: 0px solid #000080;
     position: absolute;
 }
@@ -91,8 +91,8 @@ a.snake-link:hover {
     margin: 0px;
     padding: 0px;
     position: absolute;
-    background-color: #0000A8;
-    border: 0px solid #0000A8;
+    background-color: rgb(0, 0, 0);
+    border: 0px solid rgb(0, 0, 0);
 }
 
 .snake-game-container {
@@ -101,7 +101,7 @@ a.snake-link:hover {
     border-width: 0px;
     border-style: none;
     zoom: 1;
-    background-color: #FC5454;
+    background-color: #ffffff;
     position: relative;
 }
             
@@ -115,7 +115,7 @@ a.snake-link:hover {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 300px;
+    width: 280px;
     /*height: 150px;*/
     margin-top: -100px;
     margin-left: -158px;
@@ -131,10 +131,10 @@ a.snake-link:hover {
     font-family: Verdana, arial, helvetica, sans-serif;
     font-size: 14px;
     position: absolute;
-    top: 50%;
+    top: 40%;
     left: 50%;
-    width: 300px;
-    height: 100px;
+    width: 280px;
+    height: 170px;
     margin-top: -75px;
     margin-left: -158px;
     text-align: center;
