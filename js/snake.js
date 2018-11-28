@@ -916,12 +916,13 @@ SNAKE.Board = SNAKE.Board || (function() {
 
                     me.setBoardState(2); // start the game!
 
-                    // Den Timer auf 2 Minuten setzen und runter zaehlen lassen
                     if (mySnake.wasStartedOnce === false) {
                         wasStartedOnce = true;
-                        //var twoMinutes = 30;
+
+                        // Den Timer runter zaehlen lassen
                         var display = document.querySelector('#time');
                         startTimer(timetoplay, display);
+
                         // Updated alle 75ms für Tastatureingaben (PC)
                         mySnake.snakeSpeed = 75;
                     }
@@ -937,7 +938,7 @@ SNAKE.Board = SNAKE.Board || (function() {
 
             function addSwipeListener() {
                 var body = document.getElementsByTagName("BODY")[0];
-                var hammer = new Hammer(document.getElementsByTagName("BODY")[0]);
+                var hammer = new Hammer(body);
                 hammer.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
                 hammer.on('swipe', function(event, arg1, arg2) {
                     event.preventDefault();
@@ -945,16 +946,7 @@ SNAKE.Board = SNAKE.Board || (function() {
                     if (!(event.direction === 2 || event.direction === 4 || event.direction === 8 || event.direction === 16)) {return;} // if not a swipe, leave
                     mySnake.handleArrowKeys(event.direction);
                     if (me.getBoardState() === 1) {
-                        // Den Timer auf 2 Minuten setzen und runter zaehlen lassen
-                        if (mySnake.wasStartedOnce === false) {
-                            // Updated alle 120ms für Swipe-Eingaben (Mobil)
-                            mySnake.snakeSpeed = 120;
 
-                            wasStartedOnce = true;
-                            //var twoMinutes = 30;
-                            var display = document.querySelector('#time');
-                            startTimer(timetoplay, display);
-                        }
                         me.setBoardState(2); // start the game!
                         mySnake.go();
                     }
@@ -964,7 +956,17 @@ SNAKE.Board = SNAKE.Board || (function() {
             // Search for #listenerX to see where this is removed
             SNAKE.addEventListener( elmContainer, "keydown", myKeyListener, false);
             // Swipe Geste hinzufuegen
-            addSwipeListener();
+            if (mySnake.wasStartedOnce === false) {
+                wasStartedOnce = true;
+                // Updated alle 120ms für Swipe-Eingaben (Mobil)
+                mySnake.snakeSpeed = 120;
+
+                // Den Timer runter zaehlen lassen
+                var display = document.querySelector('#time');
+                startTimer(timetoplay, display);
+
+                addSwipeListener();
+            }
 
         };
         
