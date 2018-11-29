@@ -917,7 +917,7 @@ SNAKE.Board = SNAKE.Board || (function() {
                     me.setBoardState(2); // start the game!
 
                     if (mySnake.wasStartedOnce === false) {
-                        wasStartedOnce = true;
+                        mySnake.wasStartedOnce = true;
 
                         // Den Timer runter zaehlen lassen
                         var display = document.querySelector('#time');
@@ -941,6 +941,17 @@ SNAKE.Board = SNAKE.Board || (function() {
                 var hammer = new Hammer(body);
                 hammer.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
                 hammer.on('swipe', function(event, arg1, arg2) {
+
+                    if (mySnake.wasStartedOnce === false) {
+                        mySnake.wasStartedOnce = true;
+                        // Updated alle 120ms für Swipe-Eingaben (Mobil)
+                        mySnake.snakeSpeed = 120;
+        
+                        // Den Timer runter zaehlen lassen
+                        var display = document.querySelector('#time');
+                        startTimer(timetoplay, display);
+                    }
+
                     event.preventDefault();
                     mySnake.rebirth();
                     if (!(event.direction === 2 || event.direction === 4 || event.direction === 8 || event.direction === 16)) {return;} // if not a swipe, leave
@@ -955,19 +966,11 @@ SNAKE.Board = SNAKE.Board || (function() {
 
             // Search for #listenerX to see where this is removed
             SNAKE.addEventListener( elmContainer, "keydown", myKeyListener, false);
+
             // Swipe Geste hinzufuegen
             if (mySnake.wasStartedOnce === false) {
-                wasStartedOnce = true;
-                // Updated alle 120ms für Swipe-Eingaben (Mobil)
-                mySnake.snakeSpeed = 120;
-
-                // Den Timer runter zaehlen lassen
-                var display = document.querySelector('#time');
-                startTimer(timetoplay, display);
-
                 addSwipeListener();
             }
-
         };
         
         function startTimer(duration, display) {
